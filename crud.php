@@ -1,4 +1,26 @@
 <?php
+/**
+ * This file is an example of how I code with PHP, HTML, JavaScript, and CSS.
+ * I typically separate the different languages into separate files, but this is
+ * a single file that is fully functional. There are minimal validations that 
+ * demonstrate the understanding of the importance of input validation.
+ *
+ * If this was production code, I would have these code pieces in different 
+ * parts:
+ * 1. PHP Class: Customer.php
+ * 2. PHP API: api.php
+ * 3. HTML front-end: crud.html
+ * 4. CSS: crud.css
+ * 5. JavaScript: crud.js
+ * 6. some sort of template system (for HTML with string replacement)
+ *
+ * @author Mike Rodarte
+ */
+
+/**
+ * Check to see if there is a server host
+ * @return bool
+ */
 function is_valid_user() {
     return strlen($_SERVER['HTTP_HOST']) > 0;
 }
@@ -10,12 +32,13 @@ if (!is_valid_user()) {
 
 
 define('NL', "\n");
+// As sample code in a single-file application, the session will store the last insert ID.
 $_SESSION['last_insert_id'] = 0;
 
-
+// Get the action from POST
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 
-// create the new Customer object
+// create the new Customer object, handling the CRUD functionality
 $customer = new Customer();
 
 // determine what the API should handle
@@ -25,7 +48,7 @@ switch ($action) {
         $number = isset($_POST['number']) ? $_POST['number'] : 0;
         $row = !empty($name) && $number > 0 ? $customer->create($name, $number) : 'Invalid parameters provided.';
         echo $row;
-        exit(1);
+        exit(0);
         break;
     case 'delete':
         $id = isset($_POST['id']) ? $_POST['id'] : 0;
@@ -33,7 +56,7 @@ switch ($action) {
             $result = $customer->delete($id);
             echo $result;
         }
-        exit(1);
+        exit(0);
         break;
     case 'edit':
         $id = isset($_POST['id']) ? $_POST['id'] : 0;
@@ -41,14 +64,19 @@ switch ($action) {
         $number = isset($_POST['number']) ? $_POST['number'] : 0;
         $row = !empty($name) && $number > 0 ? $customer->update($id, $name, $number) : 'Invalid parameters provided.';
         echo $row;
-        exit(1);
+        exit(0);
         break;
     case 'load':
         echo $customer->read();
-        exit(1);
+        exit(0);
         break;
 }
 
+/**
+ * Handle CRUD functionality.
+ *
+ * @author Mike Rodarte
+ */
 class Customer {
     /**
      * @var PDOWrapper $db
@@ -60,6 +88,13 @@ class Customer {
     private $error = '';
 
 
+    /**
+     * Handle initialization of the database (if available).
+     *
+     * @see PDOWrapper.php
+     * @uses PDOWrapper
+     * @uses Customer::setLastInsertId()
+     */
     public function __construct() {
         if (file_exists('PDOWrapper.php')) {
             // see https://github.com/mts7/PDOWrapper/blob/master/PDOWrapper.php
@@ -71,6 +106,18 @@ class Customer {
     }
 
 
+    /**
+     * Generate HTML with specified parameters.
+     *
+     * This would normally be handled with the templating system, but is in-line for the single-file application.
+     *
+     * @param string $name Customer name
+     * @param int $number Customer number
+     * @param int $id Customer ID
+     * @param string $added Date and time customer was added
+     * @param string $modified Date and time customer was modified
+     * @return string HTML table row with values
+     */
     public function buildRow($name, $number, $id, $added, $modified) {
         if (!is_string($name) || !is_numeric($number) || !is_numeric($id) || !is_string($added) || !is_string($modified)) {
             $this->error = 'Invalid parameter format.';
@@ -158,24 +205,25 @@ class Customer {
 
     /**
      * Read all customers from the database table and return them in HTML format to the API.
+     * @return string HTML table row or empty on error
      * @uses PDOWrapper::select()
      * @uses Customer::buildRow()
      */
     public function read() {
-        if (is_object($this->db)) {
-            $q = 'SELECT * FROM customers';
-            $rows = $this->db->select($q);
-            if (is_array_ne($rows)) {
-                $html = '';
-                foreach($rows as $row) {
-                    $html .= $this->buildRow($row['name'], $row['number'], $row['id'], $row['added'], $row['modified']);
-                }
-                return $html;
-            } else {
-                $this->error = 'No customers found in table.';
-                return '';
+        if (!is_object($this->db)) {
+            return '';
+        }
+
+        $q = 'SELECT * FROM customers';
+        $rows = $this->db->select($q);
+        if (is_array_ne($rows)) {
+            $html = '';
+            foreach($rows as $row) {
+                $html .= $this->buildRow($row['name'], $row['number'], $row['id'], $row['added'], $row['modified']);
             }
+            return $html;
         } else {
+            $this->error = 'No customers found in table.';
             return '';
         }
     }
@@ -183,6 +231,7 @@ class Customer {
 
     /**
      * Set the last insert ID from the database if there is a database object available.
+     * @return bool
      * @uses PDOWrapper::select()
      */
     public function setLastInsertId() {
@@ -192,7 +241,7 @@ class Customer {
         }
 
         // get the highest insert id from the database table
-        $rows = $this->db->select('SELECT MAX(id) AS "last" FROM customers');
+        $rows = $this->db->select('SELECT MAX(id) AS last FROM customers');
         if (is_array_ne($rows)) {
             $row = $rows[0];
             $_SESSION['last_insert_id'] = $row['last'];
