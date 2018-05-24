@@ -1,0 +1,30 @@
+CREATE TABLE polls (
+  id INT(4) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  question VARCHAR(255) NOT NULL,
+  created_date DATETIME NOT NULL,
+  created_ip VARCHAR(15) NOT NULL,
+  updated_date DATETIME NOT NULL,
+  updated_ip VARCHAR(15) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE poll_answers (
+  id INT(16) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  poll_id INT(8) UNSIGNED NOT NULL,
+  answer VARCHAR(255) NOT NULL,
+  created_date DATETIME NOT NULL,
+  created_ip VARCHAR(15) NOT NULL,
+  updated_date DATETIME NOT NULL,
+  updated_ip VARCHAR(15) NOT NULL
+) ENGINE=InnoDb;
+
+CREATE TABLE poll_results (
+  id INT(16) UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  poll_id INT(4) UNSIGNED NOT NULL,
+  answer_id INT(16) UNSIGNED NOT NULL,
+  taker_hash TEXT NOT NULL,
+  created_date DATETIME NOT NULL,
+  created_ip VARCHAR(15) NOT NULL,
+  updated_date DATETIME NOT NULL,
+  updated_ip VARCHAR(15) NOT NULL
+) ENGINE=InnoDb;
