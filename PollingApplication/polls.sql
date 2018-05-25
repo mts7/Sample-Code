@@ -4,8 +4,8 @@ CREATE TABLE polls (
   question VARCHAR(255) NOT NULL,
   created_date DATETIME NOT NULL,
   created_ip VARCHAR(15) NOT NULL,
-  updated_date DATETIME NOT NULL,
-  updated_ip VARCHAR(15) NOT NULL
+  updated_date DATETIME NULL,
+  updated_ip VARCHAR(15) NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE poll_answers (
@@ -14,8 +14,8 @@ CREATE TABLE poll_answers (
   answer VARCHAR(255) NOT NULL,
   created_date DATETIME NOT NULL,
   created_ip VARCHAR(15) NOT NULL,
-  updated_date DATETIME NOT NULL,
-  updated_ip VARCHAR(15) NOT NULL
+  updated_date DATETIME NULL,
+  updated_ip VARCHAR(15) NULL
 ) ENGINE=InnoDb;
 
 CREATE TABLE poll_results (
@@ -25,6 +25,6 @@ CREATE TABLE poll_results (
   taker_hash TEXT NOT NULL,
   created_date DATETIME NOT NULL,
   created_ip VARCHAR(15) NOT NULL,
-  updated_date DATETIME NOT NULL,
-  updated_ip VARCHAR(15) NOT NULL
+  updated_date DATETIME NULL,
+  updated_ip VARCHAR(15) NULL
 ) ENGINE=InnoDb;

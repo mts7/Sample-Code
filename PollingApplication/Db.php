@@ -250,13 +250,46 @@ class Db {
     return $updated;
   } // end update
 
-  public function delete($table = '', $conditions = []) {
+  /**
+   * Delete a specific record
+   *
+   * @param string $table
+   * @param array $conditions
+   * @param int $limit
+   *
+   * @return array|bool|int|null|string
+   */
+  public function delete($table = '', array $conditions = [], $limit = 1) {
+    // loosely validate input
+    if (!\is_string($table) || empty($table) || !\is_array($conditions) || empty($conditions)) {
+        return false;
+    }
 
+    // build DELETE query
+    $sql = 'DELETE FROM ' . $table . PHP_EOL;
+
+    // add WHERE clause
+    [$where_sql, $params] = $this->conditions($conditions);
+    $sql .= $where_sql;
+
+    // add LIMIT clause
+    if (\is_int($limit) && $limit > 0) {
+      $sql .= '  LIMIT ' . $limit;
+    }
+
+    // execute query
+    $deleted = $this->query($sql, $params, 'delete');
+
+    // set messaging as appropriate
+    if ($deleted !== false) {
+      $this->message = 'Successfully deleted the poll';
+    }
+    else {
+      $this->message = 'Error deleting poll from the table';
+    }
+
+    return $deleted;
   } // end delete
-
-  public function sql($sql = '') {
-    // TODO: validate the query before executing it to watch for injection
-  } // end sql
 
   /**
    * Execute a query with optional parameters and return the requested result

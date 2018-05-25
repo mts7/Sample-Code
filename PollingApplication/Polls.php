@@ -239,14 +239,145 @@ class Polls {
   } // end edit
 
   /**
+   * Delete the poll with the provided ID
+   *
+   * @param int $poll_id
+   *
+   * @return array|bool|int|null|string
+   */
+  public function delete($poll_id = 0) {
+    // loosely validate poll_id
+    if (!\is_int($poll_id) || $poll_id === 0) {
+      $this->message = 'Invalid poll ID provided to delete';
+
+      return false;
+    }
+
+    // delete the answers
+    $deleted = $this->db->delete($this->tables['answer'], [
+      [
+        'poll_id',
+        $poll_id,
+      ],
+    ], 0);
+
+    if (!$deleted) {
+      $this->message = 'Could not delete the answers for the poll';
+
+      return false;
+    }
+
+    // delete the poll
+    $deleted = $this->db->delete($this->tables['poll'], [['id', $poll_id]], 1);
+
+    // set messages
+    if (!$deleted) {
+      $this->message = 'Error deleting a poll';
+    }
+    else {
+      $this->message = 'Successfully deleted the poll and answers';
+    }
+
+    return $deleted;
+  } // end delete
+
+  /**
+   * Save the vote for the poll with the answer
+   *
+   * @param int $poll_id
+   * @param int $answer_id
+   *
+   * @return bool|int
+   */
+  public function vote($poll_id = 0, $answer_id = 0) {
+    // loosely validate the poll and answer IDs
+    if (!\is_int($poll_id) || $poll_id === 0 || !\is_int($answer_id) || $answer_id === 0) {
+      $this->message = 'Could not save the vote';
+
+      return false;
+    }
+
+    // get the user ID
+    $user_id = $this->getUserId();
+
+    // determine if the user can vote
+    if (!$this->userCanVote($user_id, $poll_id)) {
+      $this->message = 'User already voted for this poll';
+
+      return false;
+    }
+
+    // prepare fields and values for table
+    $fields = [
+      'poll_id' => $poll_id,
+      'answer_id' => $answer_id,
+      'taker_hash' => $user_id,
+      'created_date' => date('Y-m-d H:i:s'),
+      'created_ip' => $this->getIp(),
+    ];
+
+    // add this vote to the table
+    $insert_id = $this->db->insert($this->tables['result'], $fields);
+
+    // get message from result
+    if ($insert_id === false) {
+      $this->message = 'Error inserting into database';
+    }
+    else {
+      if (!\is_int($insert_id) || $insert_id === 0) {
+        $this->message = 'Could not insert into table';
+      }
+      else {
+        $this->message = 'Successfully inserted vote for poll';
+        $expire = 60 * 60 * 24 * 365;
+        setcookie('poll_' . $poll_id, $insert_id, $expire, '/');
+      }
+    }
+
+    return $insert_id;
+  } // end vote
+
+  /**
    * Return HTML of the results for this poll
    *
    * @param int $poll_id
+   *
+   * @return string
    */
-  public function results($poll_id = 0) {
+  public function results($poll_id = 0): string {
     // get the results of the poll from the poll id
+    $results = $this->db->select($this->tables['result'], ['answer_id'], [
+      [
+        'poll_id',
+        $poll_id,
+      ],
+    ], [['created_date', 'ASC']]);
+
+    // instead of adding a group by clause to the Db class, loop through the results
+    $grouped_ids = [];
+    foreach ($results as $id) {
+      if (!array_key_exists($id, $grouped_ids)) {
+        $grouped_ids[$id] = 0;
+      }
+
+      $grouped_ids[$id]++;
+    }
+
     // send the results through HTML template
+    $html = $this->template('results', [
+      'answer_ids' => $grouped_ids,
+      'total_answers' => \count($results),
+    ]);
+
+    if ('' === $html) {
+      $this->message = 'Could not get HTML from template';
+    }
+    else {
+      $this->message = 'Successfully created the HTML with the results';
+    }
+
     // display poll results
+    return $html;
   } // end results
 
   /**
@@ -328,6 +459,38 @@ class Polls {
   private function getIp() {
     return $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
   } // end getIp
+
+  /**
+   * Generate an user string to attempt to identify the user
+   *
+   * @return string
+   */
+  private function getUserId(): string {
+    $ip = $this->getIp();
+    $ua = $_SERVER['HTTP_USER_AGENT'];
+
+    return session_id() . '|' . $ip . '|' . $ua;
+  } // end getUserId
+
+  /**
+   * Determine if this user has already voted for this poll
+   *
+   * @param string $user_id
+   * @param int $poll_id
+   *
+   * @return bool
+   */
+  private function userCanVote($user_id = '', $poll_id = 0): bool {
+    $result = $this->db->select($this->tables['result'], ['id'], [
+      [
+        'poll_id',
+        $poll_id,
+      ],
+      ['taker_hash', $user_id],
+    ], [], 'single');
+
+    return $result === false || empty($result);
+  } // end userCanVote
 
   /**
    * Process a template file with PHP variables
@@ -415,4 +578,22 @@ class Polls {
 
     return $fixed;
   } // end fixAnswers
+
+  /**
+   * Get the header template
+   *
+   * @return bool|string
+   */
+  public function getHeader() {
+    return $this->template('header');
+  } // end getHeader
+
+  /**
+   * Get the footer template
+   *
+   * @return bool|string
+   */
+  public function getFooter() {
+    return $this->template('footer');
+  } // end getFooter
 } // end Polls
