@@ -43,6 +43,12 @@ switch ($action) {
     echo $html;
     break;
   case 'delete':
+    $id = array_key_exists('id', $_POST) ? $_POST['id'] : 0;
+    $deleted = $polls->delete($id);
+    $message = $polls->getMessage();
+    $result = ['deleted' => $deleted, 'message' => $message];
+    break;
+  case 'edit':
     break;
   default:
     break;

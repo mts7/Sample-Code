@@ -412,6 +412,14 @@ class Polls {
   } // end getEdit
 
   /**
+   * Accessor method to get the last message
+   * @return string
+   */
+  public function getMessage(): string {
+    return $this->message;
+  } // end getMessage
+
+  /**
    * Get the poll with answers for the given ID
    *
    * @param int $poll_id

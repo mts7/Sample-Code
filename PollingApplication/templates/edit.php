@@ -19,7 +19,7 @@
     </div> <!-- end .poll-answer-button-area -->
   </div> <!-- end .poll-answers-area -->
   <div class="poll-submit-area">
-    <input type="button" name="poll-edit-submit" class="poll-submit poll-input poll-input-button" value="Save" />
+    <input type="button" name="poll-edit-submit" class="poll-submit poll-input poll-input-button poll-edit-save-button" value="Save" />
   </div> <!-- end .poll-submit-area -->
   <div class="poll-message-area">
 
