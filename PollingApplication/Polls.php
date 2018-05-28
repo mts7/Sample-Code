@@ -300,41 +300,56 @@ class Polls {
     // get the user ID
     $user_id = $this->getUserId();
 
-    // determine if the user can vote
-    if (!$this->userCanVote($user_id, $poll_id)) {
-      $this->message = 'User already voted for this poll';
+    // determine if this is the first vote for the user
+    $insert = $this->userCanVote($user_id, $poll_id);
 
-      return false;
-    }
+    if ($insert === true) {
+      // prepare fields and values for insert
+      $fields = [
+        'poll_id' => $poll_id,
+        'answer_id' => $answer_id,
+        'taker_hash' => $user_id,
+        'created_date' => date('Y-m-d H:i:s'),
+        'created_ip' => $this->getIp(),
+      ];
 
-    // prepare fields and values for table
-    $fields = [
-      'poll_id' => $poll_id,
-      'answer_id' => $answer_id,
-      'taker_hash' => $user_id,
-      'created_date' => date('Y-m-d H:i:s'),
-      'created_ip' => $this->getIp(),
-    ];
+      // add this vote to the table
+      $result = $this->db->insert($this->tables['result'], $fields);
 
-    // add this vote to the table
-    $insert_id = $this->db->insert($this->tables['result'], $fields);
-
-    // get message from result
-    if ($insert_id === false) {
-      $this->message = 'Error inserting into database';
-    }
-    else {
-      if (!\is_int($insert_id) || $insert_id === 0) {
-        $this->message = 'Could not insert into table';
+      // get message from result
+      if ($result === false) {
+        $this->message = 'Error inserting into database';
       }
       else {
-        $this->message = 'Successfully inserted vote for poll';
-        $expire = 60 * 60 * 24 * 365;
-        setcookie('poll_' . $poll_id, $insert_id, $expire, '/');
+        if (!\is_int($result) || $result === 0) {
+          $this->message = 'Could not insert into table';
+        }
+        else {
+          $this->message = 'Successfully inserted vote for poll';
+          $expire = 60 * 60 * 24 * 365;
+          setcookie('poll_' . $poll_id, $result, $expire, '/');
+        }
+      }
+    }
+    else {
+      // prepare fields and values for update
+      $set = [
+        'answer_id' => $answer_id,
+        'updated_date' => date('Y-m-d H:i:s'),
+        'updated_ip' => $this->getIp(),
+      ];
+      $result = $this->db->update($this->tables['result'], $set, [['poll_id' => $poll_id]], 1);
+
+      // set message from result
+      if ($result === false) {
+        $this->message = 'Could not update the answer';
+      }
+      else {
+        $this->message = 'Successfully updated the vote for poll';
       }
     }
 
-    return $insert_id;
+    return $result;
   } // end vote
 
   /**
@@ -379,6 +394,34 @@ class Polls {
     // display poll results
     return $html;
   } // end results
+
+  /**
+   * Remove an answer from a poll
+   *
+   * @param int $answer_id
+   *
+   * @return array|bool|int|null|string
+   */
+  public function removeAnswer($answer_id = 0) {
+    // loosely validate input
+    if (!\is_int($answer_id) || $answer_id === 0) {
+      $this->message = 'Invalid answer ID';
+      return false;
+    }
+
+    // execute query
+    $deleted = $this->db->delete($this->tables['answer'], [['id', $answer_id]], 1);
+
+    // set messages
+    if ($deleted === true) {
+      $this->message = 'Successfully deleted answer with ID ' . $answer_id;
+    }
+    else {
+      $this->message = 'Error deleting answer';
+    }
+
+    return $deleted;
+  } // end removeAnswer
 
   /**
    * Get edit/create page HTML

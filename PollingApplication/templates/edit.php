@@ -7,8 +7,9 @@
   </div> <!-- end .poll-question-area -->
   <div class="poll-answers-area">
     <?php foreach ($answers as $answer_id => $answer) : ?>
-    <div class="poll-answer-area">
+    <div class="poll-answer-area poll-answer-<?php echo $answer_id; ?>">
       <input type="text" maxlength="255" name="poll-answer" class="poll-answer-input poll-input poll-input-text" placeholder="Poll Answer" value="<?php echo $answer; ?>" data-id="<?php echo $answer_id; ?>" />
+      <input type="button" value="Remove" class="poll-submit poll-input poll-input-button poll-remove-answer-input" data-id="<?php echo $answer_id; ?>" />
     </div> <!-- end .poll-answer-area -->
     <?php endforeach; ?>
     <div class="poll-answer-area">
@@ -21,7 +22,4 @@
   <div class="poll-submit-area">
     <input type="button" name="poll-edit-submit" class="poll-submit poll-input poll-input-button poll-edit-save-button" value="Save" />
   </div> <!-- end .poll-submit-area -->
-  <div class="poll-message-area">
-
-  </div> <!-- end .poll-message-area -->
 </div> <!-- end .poll-edit-container -->

@@ -17,12 +17,9 @@
     ?>
   </ul> <!-- end .poll-answers -->
   <div class="poll-submit-area">
-    <input type="button" name="poll-answer-submit" class="poll-submit poll-input poll-input-button" value="Vote" />
+    <input type="button" name="poll-answer-submit" class="poll-submit poll-input poll-input-button poll-answer-submit" value="Vote" />
   </div> <!-- end .poll-submit-area -->
   <div class="poll-message-area">
 
   </div> <!-- end .poll-message-area -->
-  <div class="poll-result-area">
-
-  </div> <!-- end .poll-result-area -->
 </div> <!-- end .poll-container -->
