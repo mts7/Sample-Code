@@ -18,6 +18,7 @@
   </ul> <!-- end .poll-answers -->
   <div class="poll-submit-area">
     <input type="button" name="poll-answer-submit" class="poll-submit poll-input poll-input-button poll-answer-submit" value="Vote" />
+    <input type="button" name="poll-vote-cancel" class="poll-cancel poll-input poll-input-button poll-vote-cancel-button poll-cancel-button" value="Cancel" />
   </div> <!-- end .poll-submit-area -->
   <div class="poll-message-area">
 

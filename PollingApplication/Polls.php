@@ -176,7 +176,7 @@ class Polls {
    * @param string $question
    * @param array $answers
    *
-   * @return bool
+   * @return bool|int
    */
   public function edit($poll_id = 0, $name = '', $question = '', array $answers = []): bool {
     // loosely validate input
@@ -186,56 +186,97 @@ class Polls {
       return false;
     }
 
-    // prepare poll fields for updating
-    $fields = [
-      'name' => $name,
-      'question' => $question,
-      'updated_date' => date('Y-m-d H:i:s'),
-      'updated_ip' => $this->getIp(),
-    ];
-    // create a poll with the name and question and get the poll id
-    $updated = $this->db->update($this->tables['poll'], $fields, [
-      [
-        'id',
-        $poll_id,
-      ],
-    ], 1);
+    $insert = $poll_id === 0;
 
-    if (!$updated) {
-      $this->message = 'Could not update poll';
-
-      return false;
-    }
-
-    $good = 0;
-    // loop through answers to update
-    foreach ($answers as $id => $answer) {
-      // prepare answer fields for updating
+    if ($insert === false) {
+      // prepare poll fields for updating
       $fields = [
-        'answer' => $answer,
-        'updated_data' => date('Y-m-d H:i:s'),
+        'name' => $name,
+        'question' => $question,
+        'updated_date' => date('Y-m-d H:i:s'),
         'updated_ip' => $this->getIp(),
       ];
-      $updated = $this->db->update($this->tables['answer'], $fields, [
+      // create a poll with the name and question and get the poll id
+      $updated = $this->db->update($this->tables['poll'], $fields, [
         [
           'id',
-          $id,
+          $poll_id,
         ],
       ], 1);
-      if ($updated) {
-        $good++;
-      }
-    } // end loop answers
 
-    $success = \count($answers) === $good;
-    if ($success) {
-      $this->message = 'Successfully updated poll with answers';
+      if (!$updated) {
+        $this->message = 'Could not update poll';
+
+        return false;
+      }
+
+      $good = 0;
+      // loop through answers to update
+      foreach ($answers as $id => $answer) {
+        // prepare answer fields for updating
+        $fields = [
+          'answer' => $answer,
+          'updated_data' => date('Y-m-d H:i:s'),
+          'updated_ip' => $this->getIp(),
+        ];
+        $updated = $this->db->update($this->tables['answer'], $fields, [
+          [
+            'id',
+            $id,
+          ],
+        ], 1);
+        if ($updated) {
+          $good++;
+        }
+      } // end loop answers
     }
     else {
-      $this->message = 'Could not update answers';
+      // create a new poll and get the poll ID
+      // prepare poll fields for updating
+      $fields = [
+        'name' => $name,
+        'question' => $question,
+        'created_date' => date('Y-m-d H:i:s'),
+        'created_ip' => $this->getIp(),
+      ];
+      $poll_id = $this->db->insert($this->tables['poll'], $fields);
+
+      if ($poll_id === false) {
+        $this->message = 'Could not create a new poll';
+
+        return false;
+      }
+
+      // there is a poll ID, so insert the answers, too
+
+      $good = 0;
+      // loop through answers to update
+      foreach ($answers as $id => $answer) {
+        // prepare answer fields for updating
+        $fields = [
+          'poll_id' => $poll_id,
+          'answer' => $answer,
+          'created_data' => date('Y-m-d H:i:s'),
+          'created_ip' => $this->getIp(),
+        ];
+        $answer_id = $this->db->insert($this->tables['answer'], $fields);
+        if ($answer_id !== false) {
+          $good++;
+        }
+      } // end loop answers
     }
 
-    return $success;
+    // set message based on success
+    $success = \count($answers) === $good;
+    $verb = $insert ? 'created' : 'updated';
+    if ($success) {
+      $this->message = 'Successfully ' . $verb . ' poll with answers';
+    }
+    else {
+      $this->message = 'Could not handle answers';
+    }
+
+    return $insert ? $poll_id : $success;
   } // end edit
 
   /**

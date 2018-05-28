@@ -18,7 +18,7 @@
     $(document).on('click', '.poll-go', function clickPollView(e) {
       // display the poll page
       getPage('poll', {id: $(e.currentTarget).data('id')});
-    });
+    }); // end clickPollView
 
     /**
      * Event handler for displaying the edit page
@@ -28,7 +28,7 @@
     $(document).on('click', '.poll-edit', function clickPollEdit(e) {
       // display the edit page
       getPage('edit', {id: $(e.currentTarget).data('id')});
-    });
+    }); // end clickPollEdit
 
     /**
      * Event handler for deleting a specific poll
@@ -53,8 +53,8 @@
             getPage('list');
           }
         }
-      });
-    });
+      }); // end ajaxDoneDelete
+    }); // end clickPollDelete
 
     /**
      * Event handler for saving a vote on a poll
@@ -77,8 +77,8 @@
             $('.poll-result-area').html(data.results);
           }
         }
-      });
-    });
+      }); // end ajaxDoneSaveAnswer
+    }); // end clickPollAnswerSubmit
 
     /**
      * Event handler for adding a new answer row
@@ -92,7 +92,7 @@
         // add a new answer row for input
         $('.poll-answer-button-area').before(templateAnswer());
       }
-    });
+    }); // end clickPollAnswer
 
     /**
      * Event handler for removing an answer and answer row
@@ -115,8 +115,8 @@
             $('.poll-answer-' + id).remove();
           }
         }
-      });
-    });
+      }); // end ajaxDoneRemoveAnswer
+    }); // end clickPollRemoveAnswer
 
     /**
      * Event handler for saving the edited form
@@ -124,7 +124,7 @@
      */
     $(document).on('click', '.poll-edit-save-button', function clickPollEditSave() {
       // get values from page
-      let data = {
+      let params = {
         id: $('.poll-edit-container').data('id'),
         name: $('.poll-name-input').val(),
         question: $('.poll-question-input').val(),
@@ -134,25 +134,38 @@
       $('.poll-answer-input').each(function eachAnswerInput(ai, answer) {
         let $answer = $(answer);
         let id = $answer.data('id');
-        data['answers'].push({id: id, answer: $answer.val()});
+        params['answers'].push({id: id, answer: $answer.val()});
       });
 
       let object = {
         dataType: 'json',
         data: {
           action: 'edit',
-          data: data
+          data: params
         }
       };
       doAjax(object, function ajaxDoneEdit(data) {
         /** @param {boolean} data.edited */
         if (data.hasOwnProperty('edited')) {
           if (data.edited === true) {
-            getPage('poll', {id: data.id});
+            getPage('poll', {id: params.id});
+          }
+          else if (data.edited !== false) {
+            // data.edited must be an integer ID of the newly created poll
+            getPage('poll', {id: data.edited});
           }
         }
-      });
-    });
+      }); // end ajaxDoneEdit
+    }); // end clickPollEditSave
+
+    /**
+     * Event handler for canceling the edit/create or vote
+     * @see edit.php
+     * @see poll.php
+     */
+    $(document).on('click', '.poll-cancel-button', function clickPollEditCancel() {
+      getPage('list');
+    }); // end clickPollEditCancel
 
     /**
      * AJAX wrapper
@@ -170,7 +183,7 @@
           }
           callback(data);
         });
-    }
+    } // end doAjax
 
     /**
      * Redraw the page
@@ -203,6 +216,6 @@
       html += '</div> <!-- end .poll-answer-area -->\n';
 
       return html;
-    }
+    } // end templateAnswer
   }); // end jQueryReady
 })(jQuery); // end jQueryClosure

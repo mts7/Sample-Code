@@ -21,5 +21,6 @@
   </div> <!-- end .poll-answers-area -->
   <div class="poll-submit-area">
     <input type="button" name="poll-edit-submit" class="poll-submit poll-input poll-input-button poll-edit-save-button" value="Save" />
+    <input type="button" name="poll-edit-cancel" class="poll-cancel poll-input poll-input-button poll-edit-cancel-button poll-cancel-button" value="Cancel" />
   </div> <!-- end .poll-submit-area -->
 </div> <!-- end .poll-edit-container -->
