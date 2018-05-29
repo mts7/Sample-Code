@@ -70,6 +70,7 @@
           answerId: $('.poll-answer-input:checked').val()
         }
       };
+
       // send values to API
       doAjax(object, function ajaxDoneSaveAnswer(data) {
         if (data.hasOwnProperty('results')) {
@@ -107,6 +108,7 @@
           answerId: id
         }
       };
+
       // remove answer from table
       doAjax(object, function ajaxDoneRemoveAnswer(data) {
         if (data.hasOwnProperty('deleted')) {
@@ -144,15 +146,18 @@
           data: params
         }
       };
+
       doAjax(object, function ajaxDoneEdit(data) {
         /** @param {boolean} data.edited */
         if (data.hasOwnProperty('edited')) {
           if (data.edited === true) {
             getPage('poll', {id: params.id});
           }
-          else if (data.edited !== false) {
-            // data.edited must be an integer ID of the newly created poll
-            getPage('poll', {id: data.edited});
+          else {
+            if (data.edited !== false) {
+              // data.edited must be an integer ID of the newly created poll
+              getPage('poll', {id: data.edited});
+            }
           }
         }
       }); // end ajaxDoneEdit

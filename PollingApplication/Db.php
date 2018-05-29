@@ -60,8 +60,14 @@ class Db {
   /**
    * Db constructor.
    * Create the PDO object for later use
+   *
+   * @param string $host Host name or IP address for the MySQL server
+   * @param string $user User name for the database
+   * @param string $password Password for the database
+   * @param string $database The database name
    */
-  public function __construct() {
+  public function __construct($host = '127.0.0.1', $user = 'root', $password = 'root', $database = 'custom') {
+    $this->settings($host, $user, $password, $database);
     try {
       $this->dbh = new \PDO('mysql:host=' . $this->host . ';dbbname=' . $this->database_name, $this->user, $this->password, [\PDO::MYSQL_ATTR_FOUND_ROWS => true]);
       $this->dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -70,6 +76,21 @@ class Db {
       $this->message = 'Error connecting to MySQL database';
     }
   } // end __construct
+
+  /**
+   * Set database parameters
+   *
+   * @param string $host
+   * @param string $user
+   * @param string $password
+   * @param string $database
+   */
+  public function settings($host = '', $user = '', $password = '', $database = ''): void {
+    $this->host = \is_string($host) ? $host : '';
+    $this->user = \is_string($user) ? $user : '';
+    $this->password = \is_string($password) ? $password : '';
+    $this->database_name = \is_string($database) ? $database : '';
+  } // end settings
 
   /**
    * Insert one row of values and return the insert ID
@@ -262,7 +283,7 @@ class Db {
   public function delete($table = '', array $conditions = [], $limit = 1) {
     // loosely validate input
     if (!\is_string($table) || empty($table) || !\is_array($conditions) || empty($conditions)) {
-        return false;
+      return false;
     }
 
     // build DELETE query
@@ -464,4 +485,4 @@ class Db {
     // if there is only 1 value and it is true, all elements of the array are scalar
     return \count($unique) === 1 && $unique[0] === true;
   } // end validateScalar
-}
+} // end Db

@@ -54,12 +54,19 @@ switch ($action) {
       // get results for poll
       $poll_results = $polls->results($poll_id);
     }
-    echo json_encode(['result' => $result, 'results' => $poll_results, 'message' => $polls->getMessage()]);
+    echo json_encode([
+      'result' => $result,
+      'results' => $poll_results,
+      'message' => $polls->getMessage(),
+    ]);
     break;
   case 'delete':
     $id = array_key_exists('id', $_POST) ? $_POST['id'] : 0;
     $deleted = $polls->delete($id);
-    echo json_encode(['deleted' => $deleted, 'message' => $polls->getMessage()]);
+    echo json_encode([
+      'deleted' => $deleted,
+      'message' => $polls->getMessage(),
+    ]);
     break;
   case 'edit':
     // get parameters from POST
@@ -98,14 +105,21 @@ switch ($action) {
       }
     } // end loop
     $success = $polls->edit($id, $name, $question, $answers);
-    echo json_encode(['edited' => $success, 'message' => $polls->getMessage()]);
+    echo json_encode([
+      'edited' => $success,
+      'message' => $polls->getMessage(),
+    ]);
     break;
   case 'removeAnswer':
     $answer_id = array_key_exists('answerId', $_POST) ? (int) $_POST['answerId'] : 0;
     $removed = $polls->removeAnswer($answer_id);
-    echo json_encode(['deleted' => $removed, 'message' => $polls->getMessage()]);
+    echo json_encode([
+      'deleted' => $removed,
+      'message' => $polls->getMessage(),
+    ]);
     break;
   default:
+    echo json_encode(['message' => 'Invalid request']);
     break;
 }
 

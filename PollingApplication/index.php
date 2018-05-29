@@ -1,4 +1,10 @@
 <?php
+/**
+ * @file
+ * Set the timezone, auto load classes, and display the polls
+ * @author Mike Rodarte
+ */
+
 @session_start();
 
 $timezone = 'America/Denver';
@@ -16,6 +22,9 @@ spl_autoload_register(function ($class) {
 
 $poll = new \Polls\Polls();
 
+// get the header
 echo $poll->getHeader();
+// get the list of all polls in the database
 echo $poll->viewAll();
+// get the footer
 echo $poll->getFooter();

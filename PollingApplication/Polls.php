@@ -171,7 +171,7 @@ class Polls {
   /**
    * Save the edited poll and answers
    *
-   * @param int $poll_id
+   * @param int|bool $poll_id
    * @param string $name
    * @param string $question
    * @param array $answers
@@ -196,7 +196,7 @@ class Polls {
         'updated_date' => date('Y-m-d H:i:s'),
         'updated_ip' => $this->getIp(),
       ];
-      // create a poll with the name and question and get the poll id
+      // update a poll with the name and question
       $updated = $this->db->update($this->tables['poll'], $fields, [
         [
           'id',
@@ -447,11 +447,17 @@ class Polls {
     // loosely validate input
     if (!\is_int($answer_id) || $answer_id === 0) {
       $this->message = 'Invalid answer ID';
+
       return false;
     }
 
     // execute query
-    $deleted = $this->db->delete($this->tables['answer'], [['id', $answer_id]], 1);
+    $deleted = $this->db->delete($this->tables['answer'], [
+      [
+        'id',
+        $answer_id,
+      ],
+    ], 1);
 
     // set messages
     if ($deleted === true) {
@@ -497,6 +503,7 @@ class Polls {
 
   /**
    * Accessor method to get the last message
+   *
    * @return string
    */
   public function getMessage(): string {
