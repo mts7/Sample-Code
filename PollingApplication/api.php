@@ -28,7 +28,7 @@ switch ($action) {
         // TODO: make sure params is an array
         $id = $params['id'] ?? 0;
         if ($id > 0) {
-          $html = $polls->view($id);
+          $html = $polls->view((int) $id);
         }
         break;
       case 'edit':
@@ -36,7 +36,7 @@ switch ($action) {
         // TODO: make sure params is an array
         $id = $params['id'] ?? 0;
         if ($id > 0) {
-          $html = $polls->getEdit($id);
+          $html = $polls->getEdit((int) $id);
         }
         break;
       case 'list':

@@ -40,7 +40,7 @@ class Polls {
    *
    * @var array
    */
-  private $tables = [
+  private static $tables = [
     'poll' => 'polls',
     'answer' => 'poll_answers',
     'result' => 'poll_results',
@@ -68,7 +68,7 @@ class Polls {
    */
   public function viewAll() {
     // get all polls from database
-    $polls = $this->db->select($this->tables['poll'], [
+    $polls = $this->db->select(self::$tables['poll'], [
       'id',
       'name',
       'question',
@@ -88,6 +88,13 @@ class Polls {
    * @return bool|string
    */
   public function view($poll_id = 0) {
+    // validate poll_id
+    if (!\is_int($poll_id) || $poll_id < 1) {
+      $this->message = 'Poll ID is not valid';
+
+      return false;
+    }
+
     $poll = $this->getPoll($poll_id);
 
     if ($poll === false || empty($poll)) {
@@ -132,7 +139,7 @@ class Polls {
       'created_ip' => $this->getIp(),
     ];
     // create a poll with the name and question and get the poll id
-    $poll_id = $this->db->insert($this->tables['poll'], $fields);
+    $poll_id = $this->db->insert(self::$tables['poll'], $fields);
 
     // validate $poll_id
     if ($poll_id === false || !\is_int($poll_id) || $poll_id <= 0) {
@@ -144,7 +151,7 @@ class Polls {
     // insert each answer in the array to the table using the poll id
     $valid = 0;
     foreach ($answers as $answer) {
-      $aid = $this->db->insert($this->tables['answer'], [
+      $aid = $this->db->insert(self::$tables['answer'], [
         'poll_id' => $poll_id,
         'answer' => $answer,
       ]);
@@ -197,7 +204,7 @@ class Polls {
         'updated_ip' => $this->getIp(),
       ];
       // update a poll with the name and question
-      $updated = $this->db->update($this->tables['poll'], $fields, [
+      $updated = $this->db->update(self::$tables['poll'], $fields, [
         [
           'id',
           $poll_id,
@@ -219,7 +226,7 @@ class Polls {
           'updated_data' => date('Y-m-d H:i:s'),
           'updated_ip' => $this->getIp(),
         ];
-        $updated = $this->db->update($this->tables['answer'], $fields, [
+        $updated = $this->db->update(self::$tables['answer'], $fields, [
           [
             'id',
             $id,
@@ -239,7 +246,7 @@ class Polls {
         'created_date' => date('Y-m-d H:i:s'),
         'created_ip' => $this->getIp(),
       ];
-      $poll_id = $this->db->insert($this->tables['poll'], $fields);
+      $poll_id = $this->db->insert(self::$tables['poll'], $fields);
 
       if ($poll_id === false) {
         $this->message = 'Could not create a new poll';
@@ -259,7 +266,7 @@ class Polls {
           'created_data' => date('Y-m-d H:i:s'),
           'created_ip' => $this->getIp(),
         ];
-        $answer_id = $this->db->insert($this->tables['answer'], $fields);
+        $answer_id = $this->db->insert(self::$tables['answer'], $fields);
         if ($answer_id !== false) {
           $good++;
         }
@@ -295,7 +302,7 @@ class Polls {
     }
 
     // delete the answers
-    $deleted = $this->db->delete($this->tables['answer'], [
+    $deleted = $this->db->delete(self::$tables['answer'], [
       [
         'poll_id',
         $poll_id,
@@ -309,7 +316,7 @@ class Polls {
     }
 
     // delete the poll
-    $deleted = $this->db->delete($this->tables['poll'], [['id', $poll_id]], 1);
+    $deleted = $this->db->delete(self::$tables['poll'], [['id', $poll_id]], 1);
 
     // set messages
     if (!$deleted) {
@@ -355,21 +362,20 @@ class Polls {
       ];
 
       // add this vote to the table
-      $result = $this->db->insert($this->tables['result'], $fields);
+      $result = $this->db->insert(self::$tables['result'], $fields);
 
       // get message from result
       if ($result === false) {
         $this->message = 'Error inserting into database';
       }
+      elseif (!\is_int($result) || $result === 0) {
+        $this->message = 'Could not insert into table';
+      }
       else {
-        if (!\is_int($result) || $result === 0) {
-          $this->message = 'Could not insert into table';
-        }
-        else {
-          $this->message = 'Successfully inserted vote for poll';
-          $expire = 60 * 60 * 24 * 365;
-          setcookie('poll_' . $poll_id, $result, $expire, '/');
-        }
+        $this->message = 'Successfully inserted vote for poll';
+        $expire = 60 * 60 * 24 * 365;
+        setcookie('poll_' . $poll_id, $result, $expire, '/');
+        $_SESSION['poll_' . $poll_id] = $result;
       }
     }
     else {
@@ -379,7 +385,7 @@ class Polls {
         'updated_date' => date('Y-m-d H:i:s'),
         'updated_ip' => $this->getIp(),
       ];
-      $result = $this->db->update($this->tables['result'], $set, [['poll_id' => $poll_id]], 1);
+      $result = $this->db->update(self::$tables['result'], $set, [['poll_id' => $poll_id]], 1);
 
       // set message from result
       if ($result === false) {
@@ -402,7 +408,7 @@ class Polls {
    */
   public function results($poll_id = 0): string {
     // get the results of the poll from the poll id
-    $results = $this->db->select($this->tables['result'], ['answer_id'], [
+    $results = $this->db->select(self::$tables['result'], ['answer_id'], [
       [
         'poll_id',
         $poll_id,
@@ -452,7 +458,7 @@ class Polls {
     }
 
     // execute query
-    $deleted = $this->db->delete($this->tables['answer'], [
+    $deleted = $this->db->delete(self::$tables['answer'], [
       [
         'id',
         $answer_id,
@@ -478,6 +484,11 @@ class Polls {
    * @return bool|string
    */
   public function getEdit($poll_id = 0) {
+    if (!\is_int($poll_id) || $poll_id < 1) {
+      $this->message = 'Invalid poll ID';
+
+      return false;
+    }
     $poll = $this->getPoll($poll_id);
 
     if ($poll === false || empty($poll)) {
@@ -518,8 +529,14 @@ class Polls {
    * @return array|bool|int|null|string
    */
   private function getPoll($poll_id = 0) {
+    if (!\is_int($poll_id) || $poll_id < 1) {
+      $this->message = 'Invalid poll ID';
+
+      return false;
+    }
+
     // get specific poll from database
-    $poll = $this->db->select($this->tables['poll'], [
+    $poll = $this->db->select(self::$tables['poll'], [
       'id',
       'name',
       'question',
@@ -533,7 +550,7 @@ class Polls {
     }
 
     // get answers
-    $answers = $this->db->select($this->tables['answer'], [
+    $answers = $this->db->select(self::$tables['answer'], [
       'id',
       'answer',
     ], [['poll_id', $poll_id]]);
@@ -580,7 +597,7 @@ class Polls {
    * @return bool
    */
   private function userCanVote($user_id = '', $poll_id = 0): bool {
-    $result = $this->db->select($this->tables['result'], ['id'], [
+    $result = $this->db->select(self::$tables['result'], ['id'], [
       [
         'poll_id',
         $poll_id,

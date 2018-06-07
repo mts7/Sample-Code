@@ -36,10 +36,10 @@
      * @see poll.php
      */
     $(document).on('click', '.poll-delete', function clickPollDelete(e) {
-      let id = $(e.currentTarget).data('id');
+      var id = $(e.currentTarget).data('id');
 
       // delete the poll
-      let object = {
+      var object = {
         dataType: 'json',
         data: {
           action: 'delete',
@@ -62,7 +62,7 @@
      */
     $(document).on('click', '.poll-answer-submit', function clickPollAnswerSubmit() {
       // get values from page
-      let object = {
+      var object = {
         dataType: 'json',
         data: {
           action: 'vote',
@@ -86,7 +86,7 @@
      * @see edit.php
      */
     $(document).on('click', '.poll-add-answer-button', function clickPollAnswer() {
-      let $newAnswer = $('.poll-answer-new');
+      var $newAnswer = $('.poll-answer-new');
       if ($newAnswer.val().length > 0) {
         // there is a value in the new answer box, so remove the new answer class
         $newAnswer.removeClass('poll-answer-new');
@@ -100,8 +100,8 @@
      * @see edit.php
      */
     $(document).on('click', '.poll-remove-answer-input', function clickPollRemoveAnswer(e) {
-      let id = $(e.currentTarget).data('id');
-      let object = {
+      var id = $(e.currentTarget).data('id');
+      var object = {
         dataType: 'json',
         data: {
           action: 'removeAnswer',
@@ -126,7 +126,7 @@
      */
     $(document).on('click', '.poll-edit-save-button', function clickPollEditSave() {
       // get values from page
-      let params = {
+      var params = {
         id: $('.poll-edit-container').data('id'),
         name: $('.poll-name-input').val(),
         question: $('.poll-question-input').val(),
@@ -134,12 +134,12 @@
       };
 
       $('.poll-answer-input').each(function eachAnswerInput(ai, answer) {
-        let $answer = $(answer);
-        let id = $answer.data('id');
+        var $answer = $(answer);
+        var id = $answer.data('id');
         params['answers'].push({id: id, answer: $answer.val()});
       });
 
-      let object = {
+      var object = {
         dataType: 'json',
         data: {
           action: 'edit',
@@ -196,7 +196,7 @@
      * @param params
      */
     function getPage(page, params) {
-      let object = {
+      var object = {
         dataType: 'html',
         data: {
           action: 'page',
@@ -214,7 +214,7 @@
      * @returns {string}
      */
     function templateAnswer() {
-      let html = '';
+      var html = '';
 
       html += '<div class="poll-answer-area">\n';
       html += '  <input type="text" maxlength="255" name="poll-answer" class="poll-answer-input poll-input poll-input-text poll-answer-new" placeholder="Poll Answer" value="" />\n';
