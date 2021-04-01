@@ -1,0 +1,20 @@
+{
+  "name": "mts7/account_app",
+  "description": "Sample Code - Bank Account Application",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "mts7",
+      "email": "bankaccountapp@mts7.com"
+    }
+  ],
+  "require-dev": {
+    "phpunit/phpunit": "9"
+  },
+  "autoload": {
+    "psr-4": {
+      "AccountApp\\": "AccountApp/"
+    }
+  }
+}
